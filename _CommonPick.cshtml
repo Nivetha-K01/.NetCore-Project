@@ -1,0 +1,38 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model System.Data.DataTable
+
+<table id="tblPickList" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            @foreach (System.Data.DataColumn column in Model.Columns)
+            {
+                <th>@column.ColumnName</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (System.Data.DataRow row in Model.Rows)
+        {
+            <tr class="pick-row">
+                @foreach (System.Data.DataColumn column in Model.Columns)
+                {
+                    <td>@row[column]</td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    $(".pick-row").click(function () {
+        var value = $(this).find("td:first").text();
+
+        $("#" + currentControl).val(value);
+
+        $("#PickListModal").modal("hide");
+    });
+</script>
