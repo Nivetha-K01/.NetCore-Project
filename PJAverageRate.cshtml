@@ -1,0 +1,270 @@
+﻿@model PJAverageRate.Models.PJAverageRateViewModel
+
+
+@{
+    ViewData["Title"] = "PJAverageRate";
+}
+
+@if (TempData["Success"] != null)
+{
+    <script>
+        alert('@TempData["Success"]');
+    </script>
+}
+
+<style>
+    .pj-panel {
+        position: relative;
+        border: 2px dotted #1e73be;
+        padding: 55px 15px 175px;
+        margin-top: 20px;
+        margin-left : -250px;
+        margin-right : -250px;
+    
+
+    }
+
+    .pj-title {
+        position: absolute;
+        top: -12px;
+        left: 10px;
+        background: #1e73be;
+        color: white;
+        padding: 5px 15px;
+        font-weight: 600;
+        border-radius: 4px;
+
+    }
+
+    .pj-content {
+
+        margin-top: 10px;
+    }
+
+    #TabFieldVal,
+    #TabFieldVal th,
+    #TabFieldVal td {
+        border: none !important;
+    }
+
+    #TabFieldVal {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    #GoldRateTable {
+        margin-top: 80px;
+    }
+
+    #SpnLtvChrgs{
+        color: red;
+    }
+   
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        var check = "@ViewData["CheckList"]";
+
+        if (check === "1") {
+
+            document.getElementById("UpdateBtn").disabled = true;
+
+            document.querySelectorAll(".chkLis").forEach(function (cb) {
+                cb.disabled = true;
+            });
+        }
+    });
+</script>
+
+<div class="pj-panel">
+    <form id="avgRateForm" asp-controller="PJAverageRate" asp-action="GridGoUp" method="post">
+        <input type="hidden" asp-for="Modeall" id="Modeall" />
+        <input type="hidden" value="" id="CustgoVald" />
+        <input type="hidden" value="" id="UnitgoVald" />
+
+    <div class="pj-title">
+        PJ 30 days Average Rate
+    </div>
+
+    <table id="TabFieldVal" class="table table-bordered">
+        <tr>
+            <td id="headEle">Unit</td>
+            <td id="subEle" >
+                <div class="unit-wrapper">
+                        <input asp-for="Unit" id="txtUnit" name="Unit" value="@Model.Unit" />
+                    <input type="button" id="btnUnit" name="btnUnit" class="help" onclick="OpenHelp('L1','txtUnit');" />
+                </div>
+                    <input type="submit" id="btnUnitGo" name="btnUnitGo" formaction="@Url.Action("btnUnitGo", "PjAvgRateGoClick")"
+                           formmethod="post" class="btnGo" onclick="return OnUnitGoClick();" value="" disabled="@(Model.IsUnitCust)" />
+                
+            </td>
+            <td>
+                Company
+            </td>
+            <td>
+                    <select asp-for="Company" id="txtComp" class="HelpTextBox">
+                    <option value="">-- Select Unit --</option>
+                    <option value="SCUF">SCUF</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Date</td>
+            <td>
+            <div class="unit-wrapper">
+                        <input asp-for="Date" id="txtDate"  class="HelpTextBox" />
+                    <input class="btncalDate" id="btnDate" type="button" autocomplete="off">
+            </div>
+            </td>
+
+            <td>Custom Type</td>
+            <td>
+                    <select asp-for="CustomerType" id="CustomerType" class="HelpTextBox">
+                    <option value="">-- Select Unit --</option>
+                    <option value="A">ALL</option>
+                </select>
+                    <input type="submit" id="btnCustGo" value="" formaction="@Url.Action("btnCustGo", "PjAvgRateGoClick")"
+                           formmethod="post" class="btnGo" onclick="return OnCustGoClick();"  @(Model.IsGoCustbtn ? "disabled" : "") />
+            </td>
+
+            <td>LTV Percentage</td>
+                <td> <input asp-for="Ltv" id="LtvChrgs" class="TextBoxNormal" value ="@Model.Ltv" /></td>
+        </tr>
+
+        <tr>
+               <td></td>
+               <td></td>
+               <td></td>
+               <td></td>
+               <td>
+                <span id="SpnLtvChrgs" runat="server"></span>
+               </td>
+        </tr>
+       
+    </table>
+ 
+    <div  id="divGoldRateGrid" style="width:60%; margin:0 auto;">
+
+        <div style="width:100%; text-align:center;">
+
+            <div id="DivLvGoldRateContent1" class="ListViewTableWrapper" style="width:60%; margin-bottom:1px;">
+                         
+                    <table id="GoldRateTable" class="table table-bordered" >
+                    <thead class="table-primary">
+                        <tr>
+                            <th style="text-align:center;">S.No</th>
+                            <th style="text-align:center;">Carat Type</th>
+                            <th style="text-align:center;">Rate 30 Days (Avg)</th>
+                            <th style="text-align:center;">Previous Day Rate (IBJA)</th>
+                            <th style="text-align:center;">Final Market Rate</th>
+                            <th style="text-align:center;">Select</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        
+                            @for (int i = 0; i < Model.GoldRates.Count; i++)
+                            {
+                                <tr>
+
+                                    <td>
+                                        <input asp-for="GoldRates[i].Rowno"
+                                               class="TextBoxLabel Rowno"
+                                               readonly />
+                                    </td>
+
+                                    <td>
+                                        <input asp-for="GoldRates[i].CaratType"
+                                               class="LvCtrl CaratType" readonly  />
+                                    </td>
+
+                                    <td>
+                                        <input asp-for="GoldRates[i].RateAvg"
+                                               class="LvCtrl rateAvg" oninput="RateAvgtxt()" />
+                                    </td>
+
+                                    <td>
+                                        <input asp-for="GoldRates[i].IbjaRate"
+                                               class="LvCtrl ibjaRate"   />
+                                    </td>
+
+                                    <td>
+                                        <input asp-for="GoldRates[i].FinalMarketRate"
+                                               class="LvCtrl finalRate"  />
+                                    </td>
+
+                                    <td>
+
+                                        @if (i == 0)
+                                        {
+                                            <button type="submit" id="UpdateBtn" class="Button" onclick="return UpdateVal()"  disabled="@(Model.IsViewMode)">
+                                                UPDATE
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                          <input type="checkbox" class="chkLis" disabled="@(Model.IsViewMode)"/>
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+                        
+                    </tbody>
+
+                </table>
+
+              
+            </div>
+            </div>
+        </div>
+
+
+
+
+    </form>
+
+
+</div>
+
+
+<div class="modal fade" id="PickListModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body" id="PickListModalBody">
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            $("#txtDate").datepicker({
+                format: "dd/mm/yyyy",
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            $("#btnDate").click(function () {
+                $("#txtDate").datepicker("show");
+            });
+
+        });
+    </script>
+}
